@@ -74,9 +74,9 @@ public class LibroDataBase{
 
     @Override
     public String toString(){
-        return "LibroDataBase{" +
-            "titulo='" + titulo + '\'' +
-            ", descargas=" + descargas +
-            '}';
+        return "\n\n\t****** LIBRO ******\n" +
+            "\tTitulo: " + titulo + "\n" +
+            "\tNúmero de descargas: " + descargas + "\n" +
+            "\t*******************";
     }
 }

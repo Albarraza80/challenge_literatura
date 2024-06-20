@@ -6,18 +6,31 @@ import com.aluracursos.albert.challenge.literatura.repository.LibroRepository;
 import com.aluracursos.albert.challenge.literatura.servicio.TraerDatosApi;
 
 import java.io.IOException;
+import java.util.InputMismatchException;
 import java.util.List;
 import java.util.Optional;
 import java.util.Scanner;
 
 public class Principal{
     private Scanner leer = new Scanner( System.in );
-    //private Scanner lectura = new Scanner( System.in );
 
     private LibroRepository repositorio;
 
     public Principal( LibroRepository repository ){
         this.repositorio = repository;
+    }
+
+    private Integer leerEntero(){
+        int opcion;
+
+        try{
+            opcion = Integer.parseInt( leer.nextLine() );
+        }
+        catch( NumberFormatException exe ){
+            opcion = -1;
+        }
+
+        return opcion;
     }
 
     public void muestraMenu()
@@ -34,7 +47,7 @@ public class Principal{
                     
                     Favor digite una opción
                     
-                    1. Buscar libro por títilo
+                    1. Buscar libro por título
                     2. Mostrar libros registrados
                     3. Mostrar autores regisrados
                     4. Mostrar autores vivos por año
@@ -43,7 +56,8 @@ public class Principal{
                 """;
             System.out.println( menu );
             System.out.print( "    > " );
-            opcion = leer.nextInt();
+
+            opcion = leerEntero();
 
             switch( opcion ){
                 case 1:
@@ -87,19 +101,18 @@ public class Principal{
     }
 
     private void mostrarLibrosRegistrados(){
-        var librosDataBase = new LibroDataBase();
-        System.out.println(librosDataBase);
+        List<LibroDataBase> libros = repositorio.findAll();
+
+        libros.stream()
+            .forEach( System.out::println );
     }
 
     private void buscarLibroPorTitulo()
         throws IOException, InterruptedException{
 
-        Scanner lectura = new Scanner( System.in );
-        String tituloLibro = "";
-
         System.out.print( "    Escriba el título del libro a buscar\n    > " );
 
-        tituloLibro = lectura.nextLine();
+        var tituloLibro = this.leer.nextLine();
 
         var datosLibroSolicitado = new TraerDatosApi();
 
@@ -113,11 +126,9 @@ public class Principal{
 
             var libro = new LibroDataBase( primerLibroEncontrado );
 
-            repositorio.save( libro );
+            System.out.println( libro );
 
-//            List<LibroDataBase> libros = repositorio.findAll();
-//            libros.stream()
-//               .forEach( System.out::println );
+            repositorio.save( libro );
         }
         else{
             System.out.println( "\n    Libro no encontrado" );
