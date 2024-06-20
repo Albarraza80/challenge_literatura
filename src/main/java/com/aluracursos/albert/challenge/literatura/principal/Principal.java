@@ -76,13 +76,13 @@ public class Principal{
                     mostrarLibrosPorIdioma();
                     break;
                 case 6:
-                    System.out.println( "    **************************" );
-                    System.out.println( "    ***  PROGRAMA CERRADO  ***" );
-                    System.out.println( "    **************************" );
+                    System.out.println( "\t**************************" );
+                    System.out.println( "\t***  PROGRAMA CERRADO  ***" );
+                    System.out.println( "\t**************************" );
                     break;
                 default:
                     System.out.println( "" );
-                    System.out.println( "    Elija una opción válida" );
+                    System.out.println( "\tElija una opción válida" );
                     System.out.println( "" );
                     break;
             }
@@ -110,7 +110,7 @@ public class Principal{
     private void buscarLibroPorTitulo()
         throws IOException, InterruptedException{
 
-        System.out.print( "    Escriba el título del libro a buscar\n    > " );
+        System.out.print( "\tEscriba el título del libro a buscar\n\t> " );
 
         var tituloLibro = this.leer.nextLine();
 
@@ -122,16 +122,17 @@ public class Principal{
 
         if( primerLibroEncontrado.isPresent() ){
             var libroEncontrado = primerLibroEncontrado.get();
-            System.out.println( "\n    El libro buscado es:\n  Titulo: " + libroEncontrado.titulo() );
+            System.out.println( "\n\t****************" +
+                                "\n\tEl libro buscado es:\n\t" +
+                                "Titulo: " + libroEncontrado.titulo() +
+                                "\n\t****************");
 
             var libro = new LibroDataBase( primerLibroEncontrado );
-
-            System.out.println( libro );
 
             repositorio.save( libro );
         }
         else{
-            System.out.println( "\n    Libro no encontrado" );
+            System.out.println( "\n\tLibro no encontrado" );
         }
     }
 }
