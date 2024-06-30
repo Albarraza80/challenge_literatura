@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 @Entity
 @Table( name = "libros" )
@@ -18,24 +19,35 @@ public class LibroDataBase{
     @Column( unique = true )
     private String titulo;
 
-    @OneToMany( mappedBy = "libroDataBase", cascade = CascadeType.ALL, fetch = FetchType.EAGER )
+    @ManyToMany( cascade = CascadeType.ALL, fetch = FetchType.EAGER )
+    @JoinTable( name = "libro_autor",
+        joinColumns = @JoinColumn( name = "libro_id" ),
+        inverseJoinColumns = @JoinColumn( name = "autor_id" )
+    )
     private List<AutorDataBase> autorList;
 
     private String idiomas;
 
     private Integer descargas;
 
+    public LibroDataBase(){
+    }
+
     public LibroDataBase( Libro libro ){
         this.descargas = libro.descargas();
         this.titulo = libro.titulo();
         this.idiomas = transformarListadoIdiomasAString( libro.idiomasList() );
         this.autorList = new ArrayList<>();
+    }
 
-        for( Autor escritor : libro.autoresList() ){
-            var autorDataBase = new AutorDataBase( escritor, this );
+    public void addAutorDataBase( AutorDataBase autorDataBase ){
+        this.autorList.add( autorDataBase );
+        autorDataBase.getLibrosList().add( this );
+    }
 
-            this.autorList.add( autorDataBase );
-        }
+    public void removeAutorDataBase( AutorDataBase autorDataBase ){
+        this.autorList.remove( autorDataBase );
+        autorDataBase.getLibrosList().remove( this );
     }
 
     private String transformarListadoIdiomasAString( List<String> idiomaList ){
@@ -51,9 +63,6 @@ public class LibroDataBase{
         }
 
         return resultado.toString();
-    }
-
-    public LibroDataBase(){
     }
 
     public Long getId(){
@@ -105,16 +114,32 @@ public class LibroDataBase{
             "*******************";
     }
 
-    private String imprimirAutores(){
-        String infoAutores;
+    private StringBuilder imprimirAutores(){
+        var infoAutores = new StringBuilder();
 
-        infoAutores = "Autor(es): ";
+        infoAutores.append( "Autor(es): " );
 
         for( AutorDataBase autorDb : this.autorList ){
-            infoAutores += autorDb.toString() + ".\n";
+            infoAutores.append( autorDb.toString() ).append( ".\n" );
         }
 
         return infoAutores;
     }
 
+    @Override
+    public boolean equals( Object o ){
+        if( this == o ){
+            return true;
+        }
+        if( o == null || getClass() != o.getClass() ){
+            return false;
+        }
+        LibroDataBase that = ( LibroDataBase ) o;
+        return Objects.equals( titulo, that.titulo );
+    }
+
+    @Override
+    public int hashCode(){
+        return Objects.hashCode( titulo );
+    }
 }

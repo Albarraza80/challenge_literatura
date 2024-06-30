@@ -1,5 +1,6 @@
 package com.aluracursos.albert.challenge.literatura.principal;
 
+import com.aluracursos.albert.challenge.literatura.modelo.Autor;
 import com.aluracursos.albert.challenge.literatura.modelo.AutorDataBase;
 import com.aluracursos.albert.challenge.literatura.modelo.LibroDataBase;
 import com.aluracursos.albert.challenge.literatura.repository.AutorRepository;
@@ -9,7 +10,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
-import java.util.List;
 import java.util.Scanner;
 
 @Component
@@ -106,7 +106,7 @@ public class Principal{
         var valorDigitado = leer.nextLine();
         var aho = Integer.parseInt( valorDigitado );
 
-        List<AutorDataBase> autores = this.autorRepository.findAll();
+        var autores = this.autorRepository.findAll();
 
         var autorEncontrado = false;
 
@@ -126,14 +126,14 @@ public class Principal{
     }
 
     private void mostrarAutoresRegistrados(){
-        List<AutorDataBase> autores = this.autorRepository.findAll();
+        var autores = this.autorRepository.findAll();
 
         autores.forEach( System.out::println );
 
     }
 
     private void mostrarLibrosRegistrados(){
-        List<LibroDataBase> libros = this.libroRepository.findAll();
+        var libros = this.libroRepository.findAll();
 
         libros.forEach( System.out::println );
     }
@@ -149,20 +149,40 @@ public class Principal{
 
         var librosEncontrados = datosLibroSolicitado.solicitudRespuesta( tituloLibro );
 
-        var primerLibroEncontrado = librosEncontrados.libroList().stream().findFirst();
+        var primerLibro = librosEncontrados.libroList().stream().findFirst();
 
-        if( primerLibroEncontrado.isPresent() ){
-            var libroEncontrado = primerLibroEncontrado.get();
+        if( primerLibro.isPresent() ){
+            var libro = primerLibro.get();
+
+            var titulo = libro.titulo();
 
             System.out.println( "\n\t****************" +
                 "\n\tEl libro buscado es:\n\t" +
-                "Titulo: " + libroEncontrado.titulo() +
-                "\n\tAutor: " + libroEncontrado.autoresList().get( 0 ) +
+                "Titulo: " + titulo +
+                "\n\tAutor: " + libro.autoresList().get( 0 ) +
                 "\n\t****************" );
 
-            var libro = new LibroDataBase( libroEncontrado );
+            var libroDataBase = this.libroRepository.findByTitulo( titulo );
 
-            libroRepository.save( libro );
+            if( libroDataBase == null ){
+                libroDataBase = new LibroDataBase( libro );
+
+                for( Autor autor : libro.autoresList() ){
+                    var autorDataBases = this.autorRepository.findByNombre( autor.nombre() );
+
+                    if( autorDataBases == null ){
+                        autorDataBases = new AutorDataBase( autor );
+                    }
+
+                    libroDataBase.addAutorDataBase( autorDataBases );
+                }
+
+                libroRepository.save( libroDataBase );
+            }
+            else{
+                System.out.println( "El Libro ya se encontraba en la base de datos" );
+            }
+
         }
         else{
             System.out.println( "\n\tLibro no encontrado" );

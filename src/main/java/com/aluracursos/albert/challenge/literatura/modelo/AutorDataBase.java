@@ -1,15 +1,14 @@
 package com.aluracursos.albert.challenge.literatura.modelo;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
 
 @Entity
 @Table( name = "autores" )
-public class AutorDataBase {
+public class AutorDataBase{
 
     @Id
     @GeneratedValue( strategy = GenerationType.IDENTITY )
@@ -21,17 +20,17 @@ public class AutorDataBase {
 
     private Integer fallecimiento;
 
-    @ManyToOne
-    private LibroDataBase libroDataBase;
+    @ManyToMany( mappedBy = "autorList" )
+    private List<LibroDataBase> librosList;
 
     public AutorDataBase(){
     }
 
-    public AutorDataBase( Autor autor, LibroDataBase libroDataBase ){
+    public AutorDataBase( Autor autor ){
         this.nombre = autor.nombre();
         this.nacimiento = autor.nacimiento();
         this.fallecimiento = autor.fallecimiento();
-        this.libroDataBase = libroDataBase;
+        this.librosList = new ArrayList<>();
     }
 
     public String getNombre(){
@@ -58,12 +57,12 @@ public class AutorDataBase {
         this.fallecimiento = fallecimiento;
     }
 
-    public LibroDataBase getLibroDataBase(){
-        return libroDataBase;
+    public List<LibroDataBase> getLibrosList(){
+        return librosList;
     }
 
-    public void setLibroDataBase( LibroDataBase libroDataBase ){
-        this.libroDataBase = libroDataBase;
+    public void setLibrosList( List<LibroDataBase> librosList ){
+        this.librosList = librosList;
     }
 
     public Long getId(){
@@ -79,6 +78,35 @@ public class AutorDataBase {
         return "\nNombre: " + nombre +
             "\nFecha de nacimiento: " + nacimiento +
             "\nFecha de fallecimiento: " + fallecimiento;
+    }
+
+    private StringBuilder imprimirLibros(){
+        var infoLibros = new StringBuilder();
+
+        infoLibros.append( "Libro(s): " );
+
+        for( LibroDataBase libroDataBase : this.librosList ){
+            infoLibros.append( libroDataBase.toString() ).append( ".\n" );
+        }
+
+        return infoLibros;
+    }
+
+    @Override
+    public boolean equals( Object o ){
+        if( this == o ){
+            return true;
+        }
+        if( o == null || getClass() != o.getClass() ){
+            return false;
+        }
+        AutorDataBase that = ( AutorDataBase ) o;
+        return Objects.equals( nombre, that.nombre );
+    }
+
+    @Override
+    public int hashCode(){
+        return Objects.hashCode( nombre );
     }
 }
 
