@@ -2,42 +2,66 @@ package com.aluracursos.albert.challenge.literatura.modelo;
 
 import jakarta.persistence.*;
 
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 @Entity
-@Table( name = "libros")
+@Table( name = "libros" )
 public class LibroDataBase{
 
+    private static final String SEPARADOR = ",";
+
     @Id
-    @GeneratedValue( strategy = GenerationType.IDENTITY)
-    private Long Id;
+    @GeneratedValue( strategy = GenerationType.IDENTITY )
+    private Long id;
 
     @Column( unique = true )
     private String titulo;
 
-    @Transient
-    private List<Autor> autorList;
+    @OneToMany( mappedBy = "libroDataBase", cascade = CascadeType.ALL, fetch = FetchType.EAGER )
+    private List<AutorDataBase> autorList;
 
-    @Transient
-    private List<String> idiomas;
+    private String idiomas;
 
     private Integer descargas;
 
-    public LibroDataBase( Optional<Libro> libro){
-        this.descargas = libro.get().descargas();
-        this.titulo = libro.get().titulo();
+    public LibroDataBase( Libro libro ){
+        this.descargas = libro.descargas();
+        this.titulo = libro.titulo();
+        this.idiomas = transformarListadoIdiomasAString( libro.idiomasList() );
+        this.autorList = new ArrayList<>();
+
+        for( Autor escritor : libro.autoresList() ){
+            var autorDataBase = new AutorDataBase( escritor, this );
+
+            this.autorList.add( autorDataBase );
+        }
+    }
+
+    private String transformarListadoIdiomasAString( List<String> idiomaList ){
+        var longitud = idiomaList.size();
+        var resultado = new StringBuilder();
+
+        for( int i = 0; i < longitud; i++ ){
+            resultado.append( idiomaList.get( i ) );
+
+            if( i < longitud - 1 ){
+                resultado.append( SEPARADOR );
+            }
+        }
+
+        return resultado.toString();
     }
 
     public LibroDataBase(){
     }
 
     public Long getId(){
-        return Id;
+        return id;
     }
 
     public void setId( Long id ){
-        Id = id;
+        this.id = id;
     }
 
     public String getTitulo(){
@@ -48,19 +72,19 @@ public class LibroDataBase{
         this.titulo = titulo;
     }
 
-    public List<Autor> getAutorList(){
+    public List<AutorDataBase> getAutorList(){
         return autorList;
     }
 
-    public void setAutorList( List<Autor> autorList ){
+    public void setAutorList( List<AutorDataBase> autorList ){
         this.autorList = autorList;
     }
 
-    public List<String> getIdiomas(){
+    public String getIdiomas(){
         return idiomas;
     }
 
-    public void setIdiomas( List<String> idiomas ){
+    public void setIdiomas( String idiomas ){
         this.idiomas = idiomas;
     }
 
@@ -74,9 +98,23 @@ public class LibroDataBase{
 
     @Override
     public String toString(){
-        return "\n\n\t****** LIBRO ******\n" +
-            "\tTitulo: " + titulo + "\n" +
-            "\tNúmero de descargas: " + descargas + "\n" +
-            "\t*******************";
+        return "\n\n****** LIBRO ******\n" +
+            "Titulo: " + titulo + "\n\n" +
+            imprimirAutores() + "\n" +
+            "Número de descargas: " + descargas + "\n" +
+            "*******************";
     }
+
+    private String imprimirAutores(){
+        String infoAutores;
+
+        infoAutores = "Autor(es): ";
+
+        for( AutorDataBase autorDb : this.autorList ){
+            infoAutores += autorDb.toString() + ".\n";
+        }
+
+        return infoAutores;
+    }
+
 }
