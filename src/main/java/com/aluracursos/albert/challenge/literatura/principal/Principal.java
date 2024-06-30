@@ -166,6 +166,7 @@ public class Principal{
 
             if( libroDataBase == null ){
                 libroDataBase = new LibroDataBase( libro );
+                libroDataBase = libroRepository.save( libroDataBase );
 
                 for( Autor autor : libro.autoresList() ){
                     var autorDataBases = this.autorRepository.findByNombre( autor.nombre() );
@@ -175,9 +176,10 @@ public class Principal{
                     }
 
                     libroDataBase.addAutorDataBase( autorDataBases );
-                }
 
-                libroRepository.save( libroDataBase );
+                   this.autorRepository.save( autorDataBases );
+                    //this.libroRepository.save( libroDataBase );
+                }
             }
             else{
                 System.out.println( "El Libro ya se encontraba en la base de datos" );
