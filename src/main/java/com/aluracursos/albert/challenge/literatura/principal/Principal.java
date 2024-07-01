@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Scanner;
 
 @Component
@@ -98,6 +99,25 @@ public class Principal{
     }
 
     private void mostrarLibrosPorIdioma(){
+
+        System.out.println( """
+                            Escoja la opción del idioma a consultar
+                            
+                            (es). Español
+                            (en). Ingles
+                            (fr). Frances
+                            (de). Alemán
+                            (it). Italiano
+                           
+                            """);
+        System.out.print("> ");
+        var opcion = leer.nextLine();
+
+        var idiomaLibrosDatabaseList = this.libroRepository.findByIdiomasContaining( opcion );
+
+        idiomaLibrosDatabaseList.forEach( libro -> {
+            System.out.println(libro.imprimirInfoLibro());
+        } );
     }
 
     private void mostrarAutoresPorAno(){
@@ -105,43 +125,34 @@ public class Principal{
 
         var valorDigitado = leer.nextLine();
         var aho = Integer.parseInt( valorDigitado );
+        var autoresDatabaseList = this.autorRepository.findByAutorVivo( aho );
 
-        var autores = this.autorRepository.findAll();
-
-        var autorEncontrado = false;
-
-        for( AutorDataBase autorDataBase : autores ){
-            var nacimimento = autorDataBase.getNacimiento();
-            var fallecimiento = autorDataBase.getFallecimiento();
-
-            if( nacimimento != null && nacimimento <= aho && ( fallecimiento == null || fallecimiento > aho ) ){
-                System.out.println( autorDataBase );
-                autorEncontrado = true;
-            }
-        }
-
-        if( !autorEncontrado ){
-            System.out.println( "No se encontró autor vivo para el año: " + aho );
-        }
+        autoresDatabaseList.forEach( autorDataBase -> {
+            System.out.println(autorDataBase.imprimirInfoAutor());
+        } );
     }
 
     private void mostrarAutoresRegistrados(){
         var autores = this.autorRepository.findAll();
 
-        autores.forEach( System.out::println );
+        autores.forEach( autor -> {
+            System.out.println( autor.imprimirInfoAutor() );
+        } );
 
     }
 
     private void mostrarLibrosRegistrados(){
         var libros = this.libroRepository.findAll();
 
-        libros.forEach( System.out::println );
+        libros.forEach( libro -> {
+            System.out.println( libro.imprimirInfoLibro() );
+        } );
     }
 
     private void buscarLibroPorTitulo()
         throws IOException, InterruptedException{
 
-        System.out.print( "\tEscriba el título del libro a buscar\n\t> " );
+        System.out.print( "Escriba el título del libro a buscar\n> " );
 
         var tituloLibro = this.leer.nextLine();
 
@@ -159,14 +170,16 @@ public class Principal{
             System.out.println( "\n\t****************" +
                 "\n\tEl libro buscado es:\n\t" +
                 "Titulo: " + titulo +
-                "\n\tAutor: " + libro.autoresList().get( 0 ) +
+                "\n\tAutor: " + libro.autoresList() +
                 "\n\t****************" );
 
             var libroDataBase = this.libroRepository.findByTitulo( titulo );
 
             if( libroDataBase == null ){
                 libroDataBase = new LibroDataBase( libro );
-                libroDataBase = libroRepository.save( libroDataBase );
+                this.libroRepository.save( libroDataBase );
+
+                var autorDataBaseList = new ArrayList<AutorDataBase>();
 
                 for( Autor autor : libro.autoresList() ){
                     var autorDataBases = this.autorRepository.findByNombre( autor.nombre() );
@@ -175,14 +188,17 @@ public class Principal{
                         autorDataBases = new AutorDataBase( autor );
                     }
 
-                    libroDataBase.addAutorDataBase( autorDataBases );
-
-                   this.autorRepository.save( autorDataBases );
-                    //this.libroRepository.save( libroDataBase );
+                    autorDataBaseList.add( autorDataBases );
                 }
+
+                libroDataBase.setAutorList( autorDataBaseList );
+
+                this.libroRepository.save( libroDataBase );
+
+                System.out.println("El libro ha sido agregado a la base de datos.");
             }
             else{
-                System.out.println( "El Libro ya se encontraba en la base de datos" );
+                System.out.println( "El Libro ya se encontraba en la base de datos." );
             }
 
         }

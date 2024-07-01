@@ -16,7 +16,7 @@ public class LibroDataBase{
     @GeneratedValue( strategy = GenerationType.IDENTITY )
     private Long id;
 
-    @Column( unique = true )
+    @Column( unique = true, length = 1000 )
     private String titulo;
 
     @ManyToMany( cascade = CascadeType.ALL, fetch = FetchType.EAGER )
@@ -38,16 +38,6 @@ public class LibroDataBase{
         this.titulo = libro.titulo();
         this.idiomas = transformarListadoIdiomasAString( libro.idiomasList() );
         this.autorList = new ArrayList<>();
-    }
-
-    public void addAutorDataBase( AutorDataBase autorDataBase ){
-        this.autorList.add( autorDataBase );
-        autorDataBase.getLibrosList().add( this );
-    }
-
-    public void removeAutorDataBase( AutorDataBase autorDataBase ){
-        this.autorList.remove( autorDataBase );
-        autorDataBase.getLibrosList().remove( this );
     }
 
     private String transformarListadoIdiomasAString( List<String> idiomaList ){
@@ -108,22 +98,24 @@ public class LibroDataBase{
     @Override
     public String toString(){
         return "\n\n****** LIBRO ******\n" +
-            "Titulo: " + titulo + "\n\n" +
-            imprimirAutores() + "\n" +
+            "Titulo: " + titulo + "\n" +
             "Número de descargas: " + descargas + "\n" +
             "*******************";
     }
 
-    private StringBuilder imprimirAutores(){
-        var infoAutores = new StringBuilder();
+    public StringBuilder imprimirInfoLibro(){
+        var infoLibro = new StringBuilder();
 
-        infoAutores.append( "Autor(es): " );
+        infoLibro.append( "\n\n****** LIBRO ******\nTitulo: " ).append( titulo ).append( "\nAutor(es): " );
 
         for( AutorDataBase autorDb : this.autorList ){
-            infoAutores.append( autorDb.toString() ).append( ".\n" );
+            infoLibro.append( autorDb ).append( ".\n" );
         }
 
-        return infoAutores;
+        infoLibro.append(
+            "\nNúmero de descargas: " ).append( descargas ).append( "\n*******************" );
+
+        return infoLibro;
     }
 
     @Override

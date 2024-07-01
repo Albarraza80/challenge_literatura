@@ -20,7 +20,7 @@ public class AutorDataBase{
 
     private Integer fallecimiento;
 
-    @ManyToMany( mappedBy = "autorList" )
+    @ManyToMany( mappedBy = "autorList", fetch = FetchType.EAGER)
     private List<LibroDataBase> librosList;
 
     public AutorDataBase(){
@@ -80,16 +80,19 @@ public class AutorDataBase{
             "\nFecha de fallecimiento: " + fallecimiento;
     }
 
-    private StringBuilder imprimirLibros(){
-        var infoLibros = new StringBuilder();
+    public StringBuilder imprimirInfoAutor(){
+        var infoAutor = new StringBuilder();
 
-        infoLibros.append( "Libro(s): " );
+        infoAutor.append( "\n****** AUTOR ******\nNombre: ").append( nombre ).append( "\nFecha de nacimiento: " )
+            .append( nacimiento ).append( "\nFecha de fallecimiento: " ).append( fallecimiento );
 
-        for( LibroDataBase libroDataBase : this.librosList ){
-            infoLibros.append( libroDataBase.toString() ).append( ".\n" );
+        for( LibroDataBase libroDB : this.librosList ){
+            infoAutor.append( libroDB ).append( "\n" );
         }
 
-        return infoLibros;
+        infoAutor.append( "\n*******************" );
+
+        return infoAutor;
     }
 
     @Override
